@@ -24,7 +24,7 @@ import com.facebook.login.widget.LoginButton;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements FacebookCallback<LoginResult>{
     private TextView textView;
     private LoginButton loginButton;
     private CallbackManager callbackManager;
@@ -40,32 +40,20 @@ public class MainActivity extends AppCompatActivity {
         FacebookSdk.sdkInitialize(getApplicationContext());
         callbackManager = CallbackManager.Factory.create();
         setContentView(R.layout.activity_main);
+        getKeyHash();
+
         textView = (TextView)findViewById(R.id.textView);
         loginButton = (LoginButton)findViewById(R.id.login_button);
         textView.setText("hi");
-        loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
-            @Override
-            public void onSuccess(LoginResult loginResult) {
-                textView.setText(
-                        "User ID: "
-                                + loginResult.getAccessToken().getUserId()
-                                + "\n" +
-                                "Auth Token: "
-                                + loginResult.getAccessToken().getToken()
-                );
-            }
 
-            @Override
-            public void onCancel() {
-                textView.setText("Login attempt canceled.");
-            }
+        loginButton.registerCallback(callbackManager,this);
 
-            @Override
-            public void onError(FacebookException e) {
-                textView.setText("Login attempt failed.");
-            }
-        });
 
+
+    }
+
+
+    public void getKeyHash(){
         try {
             PackageInfo info = getPackageManager().getPackageInfo(
                     getPackageName(), PackageManager.GET_SIGNATURES);
@@ -77,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (PackageManager.NameNotFoundException e) {
         } catch (NoSuchAlgorithmException e) {
         }
-
     }
 
     @Override
@@ -86,4 +73,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public void onSuccess(LoginResult loginResult) {
+        textView.setText(
+                "User ID: "
+                        + loginResult.getAccessToken().getUserId()
+                        + "\n" +
+                        "Auth Token: "
+                        + loginResult.getAccessToken().getToken()
+        );
+    }
+
+    @Override
+    public void onCancel() {
+        textView.setText("Login attempt canceled.");
+    }
+
+    @Override
+    public void onError(FacebookException error) {
+        textView.setText("Login attempt failed.");
+    }
 }
